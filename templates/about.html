@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About HandSignify Developers</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #161A1D;
+            --secondary-dark: #21272C;
+            --accent-color: #0099ff;
+            --text-light: #F5F3F4;
+            --text-muted: #B1A7A6;
+        }
+        
+        body {
+            background-color: var(--primary-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        
+        .navbar {
+            background-color: rgba(33, 37, 41, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        .section {
+            padding: 100px 0;
+        }
+        
+        .section-dark {
+            background-color: var(--primary-dark);
+        }
+        
+        .section-secondary {
+            background-color: var(--secondary-dark);
+        }
+        
+        .hero-title {
+            font-family: 'Unbounded', cursive;
+            font-weight: 700;
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-family: 'Unbounded', cursive;
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .lead-text {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .profile-card {
+            background-color: var(--secondary-dark);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .profile-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 20px;
+            border: 4px solid var(--accent-color);
+        }
+        
+        .profile-name {
+            font-family: 'Unbounded', cursive;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .profile-role {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .profile-description {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background-color: var(--accent-color);
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .stat-card {
+            background-color: var(--secondary-dark);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+        }
+        
+        .stat-number {
+            font-family: 'Unbounded', cursive;
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .stat-text {
+            color: var(--text-muted);
+        }
+        
+        .quote-section {
+            background: linear-gradient(rgba(22, 26, 29, 0.8), rgba(22, 26, 29, 0.9)), url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 150px 0;
+            text-align: center;
+        }
+        
+        .quote-text {
+            font-family: 'Unbounded', cursive;
+            font-weight: 700;
+            font-size: 2.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.4;
+        }
+        
+        .faq-item {
+            margin-bottom: 30px;
+        }
+        
+        .faq-question {
+            font-family: 'Unbounded', cursive;
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .faq-answer {
+            color: var(--text-muted);
+            padding-left: 20px;
+            border-left: 3px solid var(--accent-color);
+        }
+        
+        .footer {
+            background-color: var(--secondary-dark);
+            padding: 50px 0 20px;
+            text-align: center;
+        }
+        
+        .footer-logo {
+            width: 80px;
+            margin-bottom: 20px;
+        }
+        
+        .footer-text {
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        
+        .accent-color {
+            color: var(--accent-color);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .quote-text {
+                font-size: 1.8rem;
+            }
+            
+            .section {
+                padding: 60px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="home.html">HandSignify</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="home.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="about.html">About</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="login.html" class="btn btn-outline-light me-2">Login</a>
+                    <a href="register.html" class="btn btn-outline-light">Sign Up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="section section-dark">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 text-center">
+                    <h1 class="hero-title">Unleashing Sign Language Genius</h1>
+                    <p class="lead-text">Meet the developer behind HandSign Language Translator, an app that's making waves in the sign language world. I'm a trailblazer determined to break barriers and empower the deaf community one translation at a time.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="section section-secondary">
+        <div class="container">
+            <h2 class="section-title">The Innovator</h2>
+            <p class="lead-text text-center mb-5">I'm a creative developer driven by the goal of bettering the lives of millions of people using sign language worldwide.</p>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="profile-card">
+                        <img src="https://avatars.githubusercontent.com/u/130319266?v=4" alt="Gurajala Laasyapriya" class="profile-img">
+                        <h3 class="profile-name">Gurajala Laasyapriya</h3>
+                        <p class="profile-role">BCA Student</p>
+                        <p class="profile-description">Passionate about creating accessible technology solutions. Currently pursuing Bachelor of Computer Applications with a focus on web development and AI applications for social good.</p>
+                        <div class="social-links">
+                            <a href="https://github.com/laasyapriya-web" class="social-link" target="_blank">
+                                <i class="fab fa-github"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-linkedin-in"></i>
+                            </a>
+                            <a href="#" class="social-link">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="mailto:laasyapriya@example.com" class="social-link">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section section-dark">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">👋</div>
+                        <h3 class="stat-number">10,000+</h3>
+                        <p class="stat-text">Words Translated</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <h3 class="stat-number">4.7/5</h3>
+                        <p class="stat-text">User Rating</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="stat-icon">🚀</div>
+                        <h3 class="stat-number">5+</h3>
+                        <p class="stat-text">Innovative Features</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quote Section -->
+    <section class="quote-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <blockquote class="quote-text">"Access to communication should be a universal right. HandSignify is leveling the playing field."</blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="section section-secondary">
+        <div class="container">
+            <h2 class="section-title">Burning Questions</h2>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="faq-item">
+                        <h3 class="faq-question">What inspired HandSignify?</h3>
+                        <p class="faq-answer">Personal experiences with communication barriers within the deaf community inspired me to create a tool that would bridge the gap between sign language and spoken language.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3 class="faq-question">How does HandSignify work?</h3>
+                        <p class="faq-answer">HandSignify translates sign language gestures into spoken words and vice versa, making conversations more seamless for users.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="faq-item">
+                        <h3 class="faq-question">Is HandSignify accessible everywhere?</h3>
+                        <p class="faq-answer">HandSignify is designed to be accessible on a variety of devices, ensuring equal access to communication for everyone.</p>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <h3 class="faq-question">What's next for HandSignify?</h3>
+                        <p class="faq-answer">I'm constantly improving and expanding the features, aiming to include new languages and dialects to reach a wider audience.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <div class="footer-logo. mx-auto">
+                        <svg width="80" height="80" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M100 100C100 100 112.5 66.5265 112.5 42.8571C112.5 19.1878 106.904 0 100 0C93.0964 0 87.5 19.1878 87.5 42.8571C87.5 66.5265 100 100 100 100ZM100 100C100 100 114.831 132.508 131.567 149.245C148.304 165.982 165.829 175.592 170.711 170.711C175.592 165.829 165.982 148.304 149.245 131.567C132.508 114.831 100 100 100 100ZM100 100C100 100 133.474 87.5 157.143 87.5C180.812 87.5 200 93.0964 200 100C200 106.904 180.812 112.5 157.143 112.5C133.474 112.5 100 100 100 100ZM100 100C100 100 67.4918 114.831 50.755 131.567C34.0183 148.304 24.4077 165.829 29.2893 170.711C34.1709 175.592 51.696 165.982 68.4327 149.245C85.1695 132.508 100 100 100 100ZM100 100L100 100C100.028 100.074 112.5 133.5 112.5 157.143C112.5 180.812 106.904 200 100 200C93.0964 200 87.5 180.812 87.5 157.143C87.5 133.474 100 100 100 100ZM100 100C100 100 66.5265 87.5 42.8571 87.5C19.1878 87.5 0 93.0964 0 100C0 106.904 19.1878 112.5 42.8571 112.5C66.5265 112.5 100 100 100 100ZM100 99.9999C100 99.9999 132.508 85.1694 149.245 68.4327C165.982 51.6959 175.592 34.1708 170.711 29.2893C165.829 24.4077 148.304 34.0183 131.567 50.755C114.831 67.4918 100 99.9999 100 99.9999ZM68.4327 50.755C85.1695 67.4918 100 100 100 100C100 100 67.4918 85.1695 50.7551 68.4327C34.0183 51.696 24.4078 34.1709 29.2893 29.2893C34.1709 24.4078 51.696 34.0183 68.4327 50.755Z" fill="#0099ff"/>
+                        </svg>
+                    </div>
+                    <p class="footer-text">© 2025 HandSignify. All rights reserved.</p>
+                    <p class="footer-text">Developed with ❤️ by <span class="accent-color">Gurajala Laasyapriya</span></p>
+                    <p class="footer-text">Developer</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

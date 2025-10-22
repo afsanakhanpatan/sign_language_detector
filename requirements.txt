@@ -1,0 +1,8 @@
+numpy
+opencv-python-headless
+mediapipe
+Flask
+matplotlib
+scikit-learn
+sounddevice
+CFFI
