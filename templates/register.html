@@ -19,22 +19,34 @@
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         {{ form.username(class="form-control form-control-lg", placeholder="Choose a username") }}
+                        {% for error in form.username.errors %}
+                            <span class="text-danger small">{{ error }}</span>
+                        {% endfor %}
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Email Address</label>
                         {{ form.email(class="form-control form-control-lg", placeholder="Enter your email") }}
+                        {% for error in form.email.errors %}
+                            <span class="text-danger small">{{ error }}</span>
+                        {% endfor %}
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Password</label>
                         {{ form.password(class="form-control form-control-lg", placeholder="Create a password") }}
                         <small class="text-muted">Must be at least 8 characters</small>
+                        {% for error in form.password.errors %}
+                            <span class="text-danger small d-block">{{ error }}</span>
+                        {% endfor %}
                     </div>
                     
                     <div class="mb-3">
                         <label class="form-label">Confirm Password</label>
                         {{ form.confirm_password(class="form-control form-control-lg", placeholder="Confirm your password") }}
+                        {% for error in form.confirm_password.errors %}
+                            <span class="text-danger small">{{ error }}</span>
+                        {% endfor %}
                     </div>
                     
                     <div class="d-grid gap-2">

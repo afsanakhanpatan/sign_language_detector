@@ -244,7 +244,7 @@ def logout():
 # -------------------Register-------------------
 class RegisterForm(FlaskForm):
     username = StringField(validators=[InputRequired()], render_kw={"placeholder": "Username"})
-    email = StringField(validators=[InputRequired(), Email()], render_kw={"placeholder": "Email"})
+    email = StringField(validators=[InputRequired(), Email(check_deliverability=False)], render_kw={"placeholder": "Email"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
     confirm_password = PasswordField(validators=[InputRequired(), EqualTo('password')], render_kw={"placeholder": "Confirm Password"})
     submit = SubmitField('Sign Up')
@@ -263,6 +263,9 @@ def register():
         db.session.commit()
         flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('login'))
+    else:
+        if form.errors:
+            print(f"[REGISTER ERRORS]: {form.errors}")
     return render_template('register.html', form=form)
 
 # -------------------Reset Email-------------------
