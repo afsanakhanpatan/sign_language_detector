@@ -1,208 +1,270 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Sign Language to Speech</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</head>
+{% block title %}Dashboard - Signify{% endblock %}
 
-<body>
-    <img src="static/background.jpeg" alt="" class="darshit1">
+{% block extra_css %}
+<style>
+.mode-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    justify-content: center;
+}
+.mode-btn {
+    padding: 1rem 2rem;
+    border: 2px solid var(--border-color);
+    background: white;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.mode-btn.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+.mode-btn i { margin-right: 8px; }
+.detection-container {
+    background: white;
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+}
+.video-wrapper {
+    background: #1e293b;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+}
+.video-wrapper video {
+    width: 100%;
+    height: auto;
+    max-height: 480px;
+    object-fit: cover;
+}
+.camera-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+.capture-btn {
+    background: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+}
+.capture-btn:hover { transform: scale(1.1); }
+.result-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 20px;
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+}
+.prediction-text {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1rem 0;
+    word-break: break-word;
+}
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+.status-indicator.status-active {
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    animation: pulse 2s infinite;
+}
+.status-indicator.status-inactive { background: #ef4444; }
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.tts-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.tts-control.off { background: rgba(0,0,0,0.3); }
+.history-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.history-prediction { font-weight: 600; }
+.history-time { color: var(--text-muted); font-size: 0.875rem; }
+.speaking-animation { animation: speakPulse 1s infinite; }
+@keyframes speakPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+.processing-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+    margin-left: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 16px;
+    padding: 3rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+.upload-area:hover {
+    border-color: var(--primary-color);
+    background: rgba(99,102,241,0.05);
+}
+.upload-area.dragover {
+    border-color: var(--primary-color);
+    background: rgba(99,102,241,0.1);
+}
+.preview-image {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 12px;
+    margin-top: 1rem;
+}
+</style>
+{% endblock %}
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('home')}}">HandSignify</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('home')}}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about')}}">About</a>
-                    </li>
-                </ul>
+{% block content %}
+<div class="container py-5">
+    <div class="dashboard-header text-center mb-5">
+        <h1 class="display-4">Welcome back, {{ name }}! <i class="fas fa-hand-peace"></i></h1>
+        <p class="lead">Capture or upload a sign language image for instant translation</p>
+    </div>
+
+    <div class="mode-selector">
+        <button class="mode-btn active" id="cameraModeBtn"><i class="fas fa-camera"></i> Capture Photo</button>
+        <button class="mode-btn" id="uploadModeBtn"><i class="fas fa-upload"></i> Upload Image</button>
+    </div>
+
+    <!-- Camera Mode -->
+    <div id="cameraMode" class="detection-container">
+        <div class="row g-0">
+            <div class="col-lg-8">
+                <div class="video-wrapper">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div class="camera-controls">
+                        <button id="captureBtn" class="capture-btn"><i class="fas fa-camera"></i></button>
+                    </div>
+                </div>
             </div>
-            <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="reviewModalLabel">Leave a Review</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="col-lg-4">
+                <div class="p-4">
+                    <div class="result-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0">Translation</h3>
+                            <div class="tts-control" id="ttsToggle">
+                                <i class="fas fa-volume-up"></i> <span>Voice ON</span>
+                            </div>
                         </div>
-                        <div class="modal-body">
-                            <iframe src="{{ url_for('feed') }}" width="100%" height="400" frameborder="0"></iframe>
+                        <div id="prediction" class="prediction-text">
+                            <span class="status-indicator status-active"></span>Camera ready
+                        </div>
+                        <button id="clearHistoryBtn" class="btn btn-light mt-3">
+                            <i class="fas fa-trash-alt"></i> Clear History
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <h4>Recent Translations</h4>
+                        <div class="history-list" id="lastPredictions">
+                            <div class="history-item"><span class="history-prediction">No translations yet</span></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="d-flex justify-content-end">
-                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
-                    <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
-                            <button class="btn btn-dark dropdown-toggle" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                {{name}}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li><a class="dropdown-item" href="{{ url_for('reset_email') }}">Reset Email</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('update_password') }}">Reset password</a>
-                                </li>
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                        data-bs-target="#reviewModal">Review</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="d-flex justify-content-end">
-                <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
-                    <a href="{{url_for('logout')}}"><button class="btn btn-dark"><i class="fa fa-sign-out"
-                                aria-hidden="true"></i>Logout</button></a>
-                </div>
-            </div>
         </div>
-    </nav>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category,message in messages %}
-    <div id="flash-message" class="alert alert-{{category}} alert-dismissible fade show" role="alert">
-        {{message}}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
 
-    <div class="video-interface">
-        <div class="dashboard-header">
-            <h1>Welcome, {{ name }}! 👋</h1>
-            <p>Real-time Sign Language Detection with Speech Output</p>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <span class="stat-number">A-Z</span>
-                <span class="stat-label">Alphabet Signs</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number">7</span>
-                <span class="stat-label">Common Phrases</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number">🔊</span>
-                <span class="stat-label">Voice Output</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-number">⚡</span>
-                <span class="stat-label">Real-time</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h2>Live Sign-to-Speech Detection</h2>
-                <p>Show your hand signs to the camera. Detected signs will be spoken aloud automatically.</p>
-            </div>
-            
-            <div class="video-wrapper">
-                <img id="videoFeed" src="{{ url_for('video_feed') }}" alt="Live Sign Language Detection Feed">
-            </div>
-            
-            <div class="prediction-container">
-                <h3>Detection Result</h3>
-                <div id="prediction" class="prediction-result">
-                    <span id="statusIndicator" class="status-indicator status-inactive"></span>
-                    Starting up...
+    <!-- Upload Mode -->
+    <div id="uploadMode" style="display: none;">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="detection-container p-4">
+                    <h3 class="mb-4">Upload Sign Language Image</h3>
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt fa-3x mb-3" style="color: var(--primary-color);"></i>
+                        <p>Click or drag and drop to upload</p>
+                        <p class="text-muted small">Supports: JPG, PNG, JPEG (Max 16MB)</p>
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                        <button class="btn btn-outline-primary" onclick="document.getElementById('imageInput').click()">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                    <div id="imagePreview" style="display: none; margin-top: 1rem;">
+                        <img id="previewImg" class="preview-image" alt="Preview">
+                    </div>
                 </div>
             </div>
-            
-            <div class="controls">
-                <button id="startBtn" class="control-btn">Start Detection</button>
-                <button id="stopBtn" class="control-btn" disabled>Stop Detection</button>
-                <!-- TTS buttons will be added automatically by JavaScript -->
-            </div>
-
-            <div class="recent-predictions">
-                <h3>Recent Predictions</h3>
-                <ul id="lastPredictions" class="predictions-list">
-                    <li>Waiting for predictions...</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h3>How It Works</h3>
-            </div>
-            <div class="tips-grid">
-                <div class="tip-item">
-                    <strong>Show Hand Signs</strong>
-                    <p>Display clear ASL signs to the camera</p>
-                </div>
-                <div class="tip-item">
-                    <strong>Real-time Detection</strong>
-                    <p>AI model detects and identifies the sign</p>
-                </div>
-                <div class="tip-item">
-                    <strong>Text Display</strong>
-                    <p>Detected sign appears on screen</p>
-                </div>
-                <div class="tip-item">
-                    <strong>Speech Output</strong>
-                    <p>Computer speaks the detected sign aloud</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h3>Tips for Best Results</h3>
-            </div>
-            <div class="tips-grid">
-                <div class="tip-item">
-                    <strong>Good Lighting</strong>
-                    <p>Ensure your hand is well-lit without shadows</p>
-                </div>
-                <div class="tip-item">
-                    <strong>Clear Background</strong>
-                    <p>Use a plain background for better detection</p>
-                </div>
-                <div class="tip-item">
-                    <strong>Steady Hand</strong>
-                    <p>Keep your hand steady in the frame</p>
-                </div>
-                <div class="tip-item">
-                    <strong>Proper Distance</strong>
-                    <p>Keep hand about 1-2 feet from camera</p>
+            <div class="col-lg-6">
+                <div class="detection-container p-4">
+                    <div class="result-card">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0">Translation</h3>
+                            <div class="tts-control" id="uploadTtsToggle">
+                                <i class="fas fa-volume-up"></i> <span>Voice ON</span>
+                            </div>
+                        </div>
+                        <div id="uploadPrediction" class="prediction-text">Waiting for upload...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='main.js') }}"></script>
-    <script>
-        // Auto-hide flash messages after 5 seconds
-        setTimeout(function() {
-            const flashMessage = document.getElementById('flash-message');
-            if (flashMessage) {
-                flashMessage.style.display = 'none';
-            }
-        }, 5000);
-    </script>
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h4 class="mb-3"><i class="fas fa-lightbulb text-warning"></i> Tips for Best Results</h4>
+                    <div class="row text-center">
+                        <div class="col-md-3"><i class="fas fa-sun fa-2x mb-2" style="color: var(--primary-color);"></i><p class="small">Good Lighting</p></div>
+                        <div class="col-md-3"><i class="fas fa-hand-peace fa-2x mb-2" style="color: var(--primary-color);"></i><p class="small">Clear Hand Position</p></div>
+                        <div class="col-md-3"><i class="fas fa-chalkboard fa-2x mb-2" style="color: var(--primary-color);"></i><p class="small">Plain Background</p></div>
+                        <div class="col-md-3"><i class="fas fa-arrows-alt fa-2x mb-2" style="color: var(--primary-color);"></i><p class="small">Proper Distance (1-2 ft)</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-</body>
-
-</html>
+<script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+{% endblock %}

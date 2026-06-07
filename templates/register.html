@@ -1,221 +1,70 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Language Translator</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        .sign {
-            margin-bottom: 30px;
-        }
+{% block title %}Sign Up - Signify{% endblock %}
 
-        .signin {
-            margin-left: 540px;
-        }
-
-        form {
-            margin-left: 540px;
-        }
-
-        .form1 {
-            margin-top: 30px;
-        }
-
-        .input {
-            border-radius: 20px;
-            width: 250px;
-            height: 25px;
-            margin-top: -10px;
-            padding-left: 6px;
-        }
-
-        .next {
-            width: 250px;
-            border-radius: 20px;
-            height: 25px;
-            color: white;
-            background-color: rgb(31, 31, 231);
-            border: none;
-        }
-
-        .next:hover {
-            transition-duration: 0.5s;
-            background-color: rgb(5, 5, 117);
-        }
-
-        .a2 {
-            cursor: pointer;
-            margin-left: 610px;
-            color: white;
-            font-size: 20px;
-        }
-
-        .line {
-            width: 90px;
-            background: rgb(189, 178, 178);
-            height: 1px;
-            margin-left: 550px;
-            display: inline-block;
-        }
-
-        h3 {
-            display: inline-block;
-        }
-
-        .line2 {
-            width: 100px;
-            background: rgb(189, 178, 178);
-            height: 1px;
-            margin-left: 550px;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        .btn {
-            width: 255px;
-            border-radius: 20px;
-            height: 35px;
-            color: rgb(255, 255, 255);
-            border-color: rgb(255, 255, 255);
-            margin-left: 545px;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            color: white;
-            background-color: black;
-            transition-duration: 0.5s;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .under {
-            margin-top: 100px;
-        }
-
-
-
-        .li1 {
-            font-size: 25px;
-        }
-
-        nav {
-            height: 50px;
-
-        }
-
-        .under {
-            color: aliceblue;
-            margin-top: 70px;
-            margin-left: 80px;
-            position: fixed;
-        }
-
-        .darshit1 {
-            width: 100%;
-            height: 100%;
-            position: fixed;
-            z-index: -1;
-            animation: DRR;
-            animation-duration: 3s;
-        }
-
-        b {
-            margin-left: 650px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-        }
-
-        .first {
-            width: 230px;
-            height: 180px;
-        }
-    </style>
-    <script type="text/javascript">
-        // Function to hide the flash message after a specific interval
-        function hideFlashMessage() {
-            var flashMessage = document.getElementById('flash-message');
-            if (flashMessage) {
-                setTimeout(function() {
-                    flashMessage.style.display = 'none';
-                }, 2000); // Adjust the time (in milliseconds) as needed
-            }
-        }
-    </script>
-
-</head>
-
-
-<body onload="hideFlashMessage()">
-    <img src="static/background.jpeg" alt="" class="darshit1">
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('home')}}">HandSignify</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ url_for('home')}}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('about')}}">About</a>
-                    </li>
-                </ul>
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="auth-card">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-plus fa-3x" style="color: var(--primary-color);"></i>
+                    <h2 class="mt-3">Create Account</h2>
+                    <p class="text-muted">Join Signify and start translating</p>
+                </div>
+                
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        {{ form.username(class="form-control form-control-lg", placeholder="Choose a username") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        {{ form.email(class="form-control form-control-lg", placeholder="Enter your email") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        {{ form.password(class="form-control form-control-lg", placeholder="Create a password") }}
+                        <small class="text-muted">Must be at least 8 characters</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        {{ form.confirm_password(class="form-control form-control-lg", placeholder="Confirm your password") }}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p>Already have an account? <a href="{{ url_for('login') }}">Sign In</a></p>
+                </div>
             </div>
         </div>
-    </nav>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category,message in messages %}
-                <div id="flash-message" style="margin-top: 56px;margin-bottom: -70px" class="alert  alert-{{category}}">{{message}}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="under">
-        <div class="sign">
-            <h1 class="signin">Register Page</h1>
-        </div>
-        <div class="form1">
-            <form method="POST" action="">
-                <label for="username">Username</label>
-                {{ form.hidden_tag()}}<br><br>
-                {{ form.username (class="input")}}<br><br>
-                <label for="email">Email Address</label>
-                {{ form.hidden_tag()}}<br><br>
-                {{ form.email(class="input")}}<br><br>
-                <label for="password">Password</label><br><br>
-                {{ form.password (class="input")}}<br><br>
-                <label for="password">Confirm Password</label><br><br>
-                {{ form.confirm_password (class="input")}}<br><br>
-                {{ form.submit (class="next")}}
-            </form>
-
-        </div></br>
-        <div class="line">
-
-        </div>
-        <h3>OR</h3>
-        <div class="line2">
-
-        </div><br>
-        <a href="{{ url_for('login') }}"> <button class="btn">Already have an account? Log In</button></a><br><br><br>
     </div>
+</div>
 
-</body>
-
-</html>
+<style>
+.auth-card {
+    background: white;
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+.form-control {
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+}
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+</style>
+{% endblock %}

@@ -1,22 +1,21 @@
-// main.js - WebSocket-based sign-to-speech with throttling
+// Signify - Main WebSocket Client
+
 document.addEventListener('DOMContentLoaded', () => {
     const videoFeed = document.getElementById('videoFeed');
     const predictionDiv = document.getElementById('prediction');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const statusIndicator = document.getElementById('statusIndicator');
     const lastPredictionsList = document.getElementById('lastPredictions');
+    const ttsToggle = document.getElementById('ttsToggle');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
     
-    let isMonitoring = false;
+    let isMonitoring = true;
     let ttsEnabled = true;
     let lastSpokenText = '';
     let lastPredictions = [];
     let socket;
-    const MAX_PREDICTIONS = 5;
+    const MAX_PREDICTIONS = 10;
     
-    // Throttling variables
     let lastSpokenTime = 0;
-    const SPEECH_COOLDOWN = 2000; // 2 seconds between speech
+    const SPEECH_COOLDOWN = 2000;
 
     // Initialize WebSocket connection
     function initializeWebSocket() {
@@ -24,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         socket.on('connect', () => {
             console.log('✅ Connected to server via WebSocket');
-            updatePredictionDisplay('Connected - Show hand signs');
+            updatePredictionDisplay('Ready - Show hand signs');
         });
         
         socket.on('connection_response', (data) => {
@@ -53,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         socket.on('voice_status', (data) => {
             ttsEnabled = data.enabled;
-            updateVoiceButton();
+            updateTTSToggle();
             console.log(`🔊 Voice ${ttsEnabled ? 'enabled' : 'disabled'}`);
         });
         
@@ -66,11 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         socket.on('disconnect', () => {
             console.log('❌ Disconnected from server');
-            updatePredictionDisplay('Connection lost');
+            updatePredictionDisplay('Connection lost - reconnecting...');
+            setTimeout(initializeWebSocket, 3000);
         });
     }
 
-    // Text-to-Speech function with throttling
+    // Text-to-Speech function
     function speakText(text) {
         if (!ttsEnabled) return;
         
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
             speechSynthesis.cancel();
             
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.8;
+            utterance.rate = 0.9;
             utterance.pitch = 1;
             utterance.volume = 1;
             
@@ -99,43 +99,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("✅ TTS started speaking");
                 lastSpokenTime = Date.now();
                 if (predictionDiv) {
-                    predictionDiv.classList.add('speaking');
+                    predictionDiv.classList.add('speaking-animation');
                 }
             };
             
             utterance.onend = () => {
                 console.log("✅ TTS finished speaking");
                 if (predictionDiv) {
-                    predictionDiv.classList.remove('speaking');
+                    predictionDiv.classList.remove('speaking-animation');
                 }
                 lastSpokenText = text;
             };
             
             utterance.onerror = (event) => {
                 console.error("❌ TTS error:", event);
-                lastSpokenText = ''; // Reset on error
+                lastSpokenText = '';
             };
             
             speechSynthesis.speak(utterance);
         } else {
             console.log("❌ Text-to-speech not supported in this browser");
-            showTTSError();
         }
     }
 
     // Update prediction display
     function updatePredictionDisplay(prediction) {
         if (predictionDiv) {
-            predictionDiv.textContent = prediction;
-            predictionDiv.className = 'prediction-result ' + 
-                (prediction.includes('No hand') || prediction.includes('Connected') || 
-                 prediction.includes('stopped') || prediction.includes('lost') ? 'no-hand' : 'active');
-        }
-        
-        if (statusIndicator) {
-            statusIndicator.className = 'status-indicator ' + 
-                (prediction.includes('No hand') || prediction.includes('Connected') || 
-                 prediction.includes('stopped') || prediction.includes('lost') ? 'status-inactive' : 'status-active');
+            const statusSpan = predictionDiv.querySelector('#statusIndicator');
+            if (statusSpan) {
+                const isActive = !prediction.includes('No hand') && 
+                                !prediction.includes('Ready') && 
+                                !prediction.includes('stopped') && 
+                                !prediction.includes('lost');
+                statusSpan.className = `status-indicator ${isActive ? 'status-active' : 'status-inactive'}`;
+            }
+            
+            const predictionText = predictionDiv.cloneNode(true);
+            predictionText.querySelectorAll('#statusIndicator, .tts-control').forEach(el => el.remove());
+            const textNode = document.createTextNode(prediction);
+            predictionDiv.innerHTML = '';
+            predictionDiv.appendChild(statusSpan || document.createElement('span'));
+            predictionDiv.appendChild(textNode);
         }
     }
 
@@ -147,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
             timestamp: predictionTime
         });
         
-        // Keep only last 5 predictions
         if (lastPredictions.length > MAX_PREDICTIONS) {
             lastPredictions.pop();
         }
@@ -162,31 +165,31 @@ document.addEventListener('DOMContentLoaded', () => {
         lastPredictionsList.innerHTML = '';
         
         if (lastPredictions.length === 0) {
-            const li = document.createElement('li');
-            li.textContent = 'No predictions yet';
-            li.className = 'no-predictions';
-            lastPredictionsList.appendChild(li);
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = '<span class="history-prediction">No predictions yet</span>';
+            lastPredictionsList.appendChild(item);
             return;
         }
         
         lastPredictions.forEach((item, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="prediction-text">${item.prediction}</span>
-                <span class="timestamp">${item.timestamp}</span>
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <span class="history-prediction">${item.prediction}</span>
+                <span class="history-time">${item.timestamp}</span>
             `;
-            lastPredictionsList.appendChild(li);
+            lastPredictionsList.appendChild(div);
         });
     }
 
     // Speak if prediction is valid
     function speakIfValid(prediction, serverTTSEnabled = true) {
         const invalidPredictions = [
-            'No hand detected', 'Prediction error', 'Connected', 'Connection lost',
+            'No hand detected', 'Prediction error', 'Ready', 'Connection lost',
             'Detection active', 'Detection stopped', 'Hand Detected'
         ];
         
-        // Check if TTS is enabled both client-side and server-side
         if (!ttsEnabled || !serverTTSEnabled) {
             console.log("🔇 TTS disabled - not speaking");
             return;
@@ -200,68 +203,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Show TTS error
-    function showTTSError() {
-        const controls = document.querySelector('.controls');
-        if (controls) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'tts-warning';
-            errorDiv.innerHTML = '❌ Text-to-speech not supported in this browser. Try Chrome.';
-            controls.appendChild(errorDiv);
-        }
-    }
-
-    // Update voice button appearance
-    function updateVoiceButton() {
-        const ttsToggleBtn = document.getElementById('ttsToggleBtn');
-        if (ttsToggleBtn) {
+    // Update TTS toggle button
+    function updateTTSToggle() {
+        if (ttsToggle) {
+            const icon = ttsToggle.querySelector('i');
+            const text = ttsToggle.querySelector('span');
             if (ttsEnabled) {
-                ttsToggleBtn.innerHTML = '🔊 Voice ON';
-                ttsToggleBtn.style.background = 'var(--success-color)';
+                icon.className = 'fas fa-volume-up';
+                text.textContent = 'Voice ON';
+                ttsToggle.classList.remove('off');
             } else {
-                ttsToggleBtn.innerHTML = '🔇 Voice OFF';
-                ttsToggleBtn.style.background = 'var(--secondary-color)';
+                icon.className = 'fas fa-volume-mute';
+                text.textContent = 'Voice OFF';
+                ttsToggle.classList.add('off');
             }
-        }
-    }
-
-    // Start monitoring
-    function startMonitoring() {
-        if (isMonitoring) return;
-        
-        isMonitoring = true;
-        console.log('🎬 Starting sign-to-speech monitoring');
-        
-        if (startBtn) startBtn.disabled = true;
-        if (stopBtn) stopBtn.disabled = false;
-        
-        updatePredictionDisplay('Detection active...');
-        
-        // Notify server
-        if (socket) {
-            socket.emit('start_detection');
-            socket.emit('get_prediction');
-        }
-    }
-
-    // Stop monitoring
-    function stopMonitoring() {
-        isMonitoring = false;
-        console.log('⏹️ Stopping monitoring');
-        
-        if (startBtn) startBtn.disabled = false;
-        if (stopBtn) stopBtn.disabled = true;
-        
-        updatePredictionDisplay('Detection stopped');
-        
-        // Stop any ongoing speech
-        if ('speechSynthesis' in window) {
-            speechSynthesis.cancel();
-        }
-        
-        // Notify server
-        if (socket) {
-            socket.emit('stop_detection');
         }
     }
 
@@ -271,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (socket) {
             socket.emit('toggle_voice', { enabled: ttsEnabled });
         }
-        updateVoiceButton();
+        updateTTSToggle();
         
         if (ttsEnabled) {
             speakText("Voice on");
@@ -292,80 +247,21 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("🗑️ Predictions cleared");
     }
 
-    // Test TTS
-    function testTTS() {
-        if (!ttsEnabled) {
-            speakText("Voice is currently off. Enable voice first.");
-            return;
-        }
-        console.log("🎤 Testing TTS");
-        speakText("Voice is working! Show me hand signs now.");
+    // Event listeners
+    if (ttsToggle) {
+        ttsToggle.addEventListener('click', toggleVoice);
     }
-
-    // Create TTS controls
-    function createTTSControls() {
-        const controls = document.querySelector('.controls');
-        if (!controls) return;
-        
-        // TTS toggle button
-        const ttsToggleBtn = document.createElement('button');
-        ttsToggleBtn.id = 'ttsToggleBtn';
-        ttsToggleBtn.className = 'control-btn';
-        ttsToggleBtn.innerHTML = '🔊 Voice ON';
-        ttsToggleBtn.style.background = 'var(--success-color)';
-        
-        // Test TTS button
-        const testTTSBtn = document.createElement('button');
-        testTTSBtn.id = 'testTTSBtn';
-        testTTSBtn.className = 'control-btn';
-        testTTSBtn.innerHTML = '🎤 Test Voice';
-        testTTSBtn.style.background = 'var(--accent-color)';
-        
-        // Clear predictions button
-        const clearBtn = document.createElement('button');
-        clearBtn.id = 'clearBtn';
-        clearBtn.className = 'control-btn';
-        clearBtn.innerHTML = '🗑️ Clear';
-        clearBtn.style.background = 'var(--warning-color)';
-        
-        // Event listeners
-        ttsToggleBtn.addEventListener('click', toggleVoice);
-        testTTSBtn.addEventListener('click', testTTS);
-        clearBtn.addEventListener('click', clearPredictions);
-        
-        controls.appendChild(ttsToggleBtn);
-        controls.appendChild(testTTSBtn);
-        controls.appendChild(clearBtn);
+    
+    if (clearHistoryBtn) {
+        clearHistoryBtn.addEventListener('click', clearPredictions);
     }
 
     // Initialize everything
     function initialize() {
-        // Initialize WebSocket
         initializeWebSocket();
-        
-        // Create controls
-        createTTSControls();
-        
-        // Set up event listeners
-        if (startBtn) {
-            startBtn.addEventListener('click', startMonitoring);
-        }
-        
-        if (stopBtn) {
-            stopBtn.addEventListener('click', stopMonitoring);
-            stopBtn.disabled = true;
-        }
-        
-        // Auto-start monitoring after short delay
-        setTimeout(() => {
-            startMonitoring();
-        }, 1000);
-        
-        console.log("🚀 Sign-to-speech system ready!");
+        console.log("🚀 Signify system ready!");
         console.log("🔊 TTS Support:", 'speechSynthesis' in window);
-        console.log("⏱️ Speech cooldown:", SPEECH_COOLDOWN + "ms");
     }
 
-    // Start initialization
     initialize();
 });
