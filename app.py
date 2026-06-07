@@ -171,7 +171,7 @@ def guide():
 # -------------------Login-------------------
 class LoginForm(FlaskForm):
     username = StringField(validators=[InputRequired()], render_kw={"placeholder": "Username"})
-    email = StringField(validators=[InputRequired(), Email()], render_kw={"placeholder": "Email"})
+    email = StringField(validators=[InputRequired(), Email(check_deliverability=False)], render_kw={"placeholder": "Email"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
     submit = SubmitField('Login')
 
@@ -187,7 +187,10 @@ def login():
             session['logged_in'] = True
             return redirect(url_for('dashboard'))
         else:
-            flash('Invalid credentials', 'danger')
+            flash('Invalid username or password. Please register first if you don\'t have an account.', 'danger')
+    else:
+        if form.errors:
+            print(f"[LOGIN ERRORS]: {form.errors}")
     return render_template('login.html', form=form)
 
 # -------------------Dashboard-------------------
