@@ -36,6 +36,7 @@ app.config['SECRET_KEY'] = 'thisisasecretkey'
 serializer = Serializer(app.config['SECRET_KEY'])
 db = SQLAlchemy(app)
 app.app_context().push()
+db.create_all()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
