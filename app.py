@@ -36,7 +36,6 @@ app.config['SECRET_KEY'] = 'thisisasecretkey'
 serializer = Serializer(app.config['SECRET_KEY'])
 db = SQLAlchemy(app)
 app.app_context().push()
-db.create_all()
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -62,6 +61,9 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(30), nullable=False)
     password = db.Column(db.String(80), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
+
+# Create all tables after models are defined
+db.create_all()
 
 # -------------------Machine Learning Initialization-------------------
 print("🔄 Loading machine learning model...")
