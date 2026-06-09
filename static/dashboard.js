@@ -122,16 +122,69 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initCamera() {
         try {
             if (stream) stopCamera();
-            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+
+            // Show "requesting" state
+            if (predictionDiv) predictionDiv.innerHTML = '<span class="status-indicator status-active"></span>Requesting camera...';
+
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+            });
             video.srcObject = stream;
             await video.play();
-            console.log("✅ Camera initialized");
-            if (predictionDiv) predictionDiv.innerHTML = '<span class="status-indicator status-active"></span>Camera ready - Click capture';
+
+            // Hide any permission overlay
+            const overlay = document.getElementById('camera-permission-overlay');
+            if (overlay) overlay.style.display = 'none';
+
+            if (predictionDiv) predictionDiv.innerHTML = '<span class="status-indicator status-active"></span>Camera ready — Click capture';
         } catch (err) {
-            console.error("Camera error:", err);
-            if (predictionDiv) predictionDiv.innerHTML = "Camera access denied. Please allow camera access.";
+            console.error("Camera error:", err.name, err.message);
+            showCameraPermissionUI(err);
         }
     }
+
+    function showCameraPermissionUI(err) {
+        // Show overlay with instructions
+        let overlay = document.getElementById('camera-permission-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'camera-permission-overlay';
+            overlay.style.cssText = `
+                position:absolute; inset:0; background:rgba(15,20,35,0.97);
+                display:flex; flex-direction:column; align-items:center;
+                justify-content:center; gap:20px; border-radius:16px; z-index:10; padding:32px; text-align:center;
+            `;
+            const videoWrapper = document.querySelector('.video-wrapper');
+            if (videoWrapper) videoWrapper.appendChild(overlay);
+        }
+
+        const isDenied = err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError');
+        overlay.innerHTML = `
+            <div style="font-size:48px;">📷</div>
+            <h4 style="color:#fff; margin:0; font-size:18px; font-weight:700;">
+                ${isDenied ? 'Camera Access Blocked' : 'Camera Not Found'}
+            </h4>
+            <p style="color:#94a3b8; margin:0; font-size:14px; max-width:280px; line-height:1.6;">
+                ${isDenied
+                    ? 'Click the <strong style="color:#fff">🔒 lock icon</strong> in your browser address bar → Site Settings → Allow Camera'
+                    : 'No camera detected. Please connect a webcam and try again.'
+                }
+            </p>
+            <button onclick="window.retryCamera()" style="
+                background: linear-gradient(135deg,#6366f1,#4f46e5);
+                color:#fff; border:none; border-radius:12px;
+                padding:12px 28px; font-size:15px; font-weight:600;
+                cursor:pointer; margin-top:8px; box-shadow:0 4px 16px rgba(99,102,241,0.4);
+                transition:transform 0.2s;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                🔄 Try Again
+            </button>
+        `;
+        overlay.style.display = 'flex';
+
+        if (predictionDiv) predictionDiv.innerHTML = '<span class="status-indicator status-inactive"></span>Camera blocked';
+    }
+
 
     function stopCamera() {
         if (stream) {
@@ -277,5 +330,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize
     initCamera();
     updateTTSToggle();
-    console.log("🚀 Dashboard ready!");
+    console.log("Dashboard ready!");
 });
+
+// Global retry function accessible from HTML onclick
+window.retryCamera = async function() {
+    const overlay = document.getElementById('camera-permission-overlay');
+    if (overlay) {
+        overlay.innerHTML = '<div style="color:#94a3b8;font-size:15px;">Requesting camera access...</div>';
+    }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.getElementById('video');
+        const predictionDiv = document.getElementById('prediction');
+        video.srcObject = stream;
+        await video.play();
+        if (overlay) overlay.style.display = 'none';
+        if (predictionDiv) predictionDiv.innerHTML = '<span class="status-indicator status-active"></span>Camera ready — Click capture';
+    } catch (err) {
+        if (overlay) {
+            overlay.innerHTML = `
+                <div style="font-size:48px;">📷</div>
+                <h4 style="color:#fff;margin:0;font-size:18px;font-weight:700;">Still Blocked</h4>
+                <p style="color:#94a3b8;margin:0;font-size:13px;max-width:280px;line-height:1.6;">
+                    In Chrome: Click the <strong style="color:#fff">🔒 lock</strong> in the address bar
+                    → Camera → <strong style="color:#fff">Allow</strong> → Reload the page
+                </p>
+                <button onclick="window.retryCamera()" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;">
+                    🔄 Try Again
+                </button>
+            `;
+        }
+    }
+};

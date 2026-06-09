@@ -33,6 +33,8 @@ bcrypt = Bcrypt(app)
 # -------------------Database Setup-------------------
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SECRET_KEY'] = 'thisisasecretkey'
+app.config['REMEMBER_COOKIE_DURATION'] = 60 * 60 * 24 * 30  # 30 days
+app.config['PERMANENT_SESSION_LIFETIME'] = 60 * 60 * 24 * 30  # 30 days
 serializer = Serializer(app.config['SECRET_KEY'])
 db = SQLAlchemy(app)
 app.app_context().push()
@@ -59,29 +61,29 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(30), nullable=False, unique=True)
     email = db.Column(db.String(30), nullable=False)
-    password = db.Column(db.String(80), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
     date_created = db.Column(db.DateTime, default=datetime.utcnow)
 
 # Create all tables after models are defined
 db.create_all()
 
 # -------------------Machine Learning Initialization-------------------
-print("🔄 Loading machine learning model...")
+print("[INFO] Loading machine learning model...")
 model = None
 
 try:
     with open('./model.p', 'rb') as f:
         model_dict = pickle.load(f)
     model = model_dict['model']
-    print("✅ Model loaded successfully")
+    print("[OK] Model loaded successfully")
 except Exception as e:
-    print(f"❌ Error loading model: {e}")
+    print(f"[ERROR] Error loading model: {e}")
     from sklearn.ensemble import RandomForestClassifier
     model = RandomForestClassifier(n_estimators=10, random_state=42)
     X_dummy = np.random.rand(100, 42)
     y_dummy = np.random.randint(0, 33, 100)
     model.fit(X_dummy, y_dummy)
-    print("✅ Dummy model created")
+    print("[OK] Dummy model created")
 
 # Initialize MediaPipe
 mp_hands = mp.solutions.hands
@@ -144,7 +146,7 @@ def process_image(image_bytes):
 @app.route('/')
 @app.route('/home')
 def home():
-    session.clear()
+    # Don't clear session — preserves login state
     return render_template('home.html')
 
 @app.route('/get_started')
@@ -171,7 +173,6 @@ def guide():
 # -------------------Login-------------------
 class LoginForm(FlaskForm):
     username = StringField(validators=[InputRequired()], render_kw={"placeholder": "Username"})
-    email = StringField(validators=[InputRequired(), Email(check_deliverability=False)], render_kw={"placeholder": "Email"})
     password = PasswordField(validators=[InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
     submit = SubmitField('Login')
 
@@ -180,26 +181,29 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user)
-            flash('Login successful!', 'success')
-            session['name'] = form.username.data
-            session['logged_in'] = True
-            return redirect(url_for('dashboard'))
+        if user:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                login_user(user, remember=True)
+                session.permanent = True
+                session['name'] = user.username
+                session['logged_in'] = True
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Incorrect password. Please try again.', 'danger')
         else:
-            flash('Invalid username or password. Please register first if you don\'t have an account.', 'danger')
-    else:
-        if form.errors:
-            print(f"[LOGIN ERRORS]: {form.errors}")
+            flash('Username not found. Please register first.', 'danger')
+    elif form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{error}', 'danger')
     return render_template('login.html', form=form)
 
 # -------------------Dashboard-------------------
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    if session.get('logged_in'):
-        return render_template('dashboard.html', name=session.get('name'))
-    return redirect(url_for('login'))
+    return render_template('dashboard.html', name=current_user.username)
 
 # -------------------Prediction Route-------------------
 @app.route('/predict', methods=['POST'])
@@ -260,15 +264,18 @@ class RegisterForm(FlaskForm):
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        # decode() converts bytes -> str so SQLite stores it correctly
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         new_user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        flash(f'Account created for {form.username.data}!', 'success')
+        flash(f'Account created for {form.username.data}! Please log in.', 'success')
         return redirect(url_for('login'))
     else:
         if form.errors:
-            print(f"[REGISTER ERRORS]: {form.errors}")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    flash(f'{error}', 'danger')
     return render_template('register.html', form=form)
 
 # -------------------Reset Email-------------------
@@ -377,6 +384,10 @@ def update_password():
 def welcome():
     return render_template('welcome.html')
 
+@app.route('/editor')
+def editor():
+    return render_template('editor.html')
+
 @app.route('/test_model')
 def test_model():
     return "Model loaded" if model else "Model not loaded"
@@ -385,7 +396,7 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     print("\n" + "="*50)
-    print("🚀 Signify Application Started")
-    print("📍 http://127.0.0.1:5000")
+    print("Signify Application Started")
+    print("http://127.0.0.1:5000")
     print("="*50 + "\n")
     app.run(debug=True, host='127.0.0.1', port=5000)

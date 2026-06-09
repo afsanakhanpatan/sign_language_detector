@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Online Code Editor - Signify{% endblock %}
+
+{% block extra_css %}
+<style>
+.editor-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+.editor-header {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem 2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border: 1px solid var(--border-color);
+}
+.editor-info h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+.editor-info p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+.editor-frame-wrapper {
+    background: white;
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    position: relative;
+    height: 75vh;
+    min-height: 500px;
+}
+.editor-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 18px;
+}
+.btn-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white !important;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.btn-tab:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+@media (max-width: 768px) {
+    .editor-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1.25rem;
+    }
+    .btn-tab {
+        width: 100%;
+        justify-content: center;
+    }
+    .editor-frame-wrapper {
+        height: 60vh;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="editor-container">
+    <div class="editor-header">
+        <div class="editor-info">
+            <h1>Online Code Editor <span class="gradient-text">Playground</span></h1>
+            <p>Write, compile, and practice your code directly inside the application.</p>
+        </div>
+        <div>
+            <a href="https://online-code-editor--afsanakhanpatan.replit.app" target="_blank" class="btn-tab">
+                <i class="fas fa-external-link-alt"></i> Open in New Tab
+            </a>
+        </div>
+    </div>
+
+    <div class="editor-frame-wrapper">
+        <iframe src="https://online-code-editor--afsanakhanpatan.replit.app" class="editor-frame" allow="clipboard-write; clipboard-read; midi; geolocation; microphone; camera; encrypted-media; autoplay" title="Online Code Editor"></iframe>
+    </div>
+</div>
+{% endblock %}
