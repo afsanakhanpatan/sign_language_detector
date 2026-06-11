@@ -119,18 +119,20 @@ def process_image(image_bytes):
     x_ = []
     y_ = []
     
-    for hand_landmarks in results.multi_hand_landmarks:
-        for i in range(len(hand_landmarks.landmark)):
-            x = hand_landmarks.landmark[i].x
-            y = hand_landmarks.landmark[i].y
-            x_.append(x)
-            y_.append(y)
-        
-        for i in range(len(hand_landmarks.landmark)):
-            x = hand_landmarks.landmark[i].x
-            y = hand_landmarks.landmark[i].y
-            data_aux.append(x - min(x_))
-            data_aux.append(y - min(y_))
+    # Only process the first detected hand to ensure we get exactly 42 features
+    hand_landmarks = results.multi_hand_landmarks[0]
+    
+    for i in range(len(hand_landmarks.landmark)):
+        x = hand_landmarks.landmark[i].x
+        y = hand_landmarks.landmark[i].y
+        x_.append(x)
+        y_.append(y)
+    
+    for i in range(len(hand_landmarks.landmark)):
+        x = hand_landmarks.landmark[i].x
+        y = hand_landmarks.landmark[i].y
+        data_aux.append(x - min(x_))
+        data_aux.append(y - min(y_))
     
     if model is not None and len(data_aux) == 42:
         try:
@@ -141,6 +143,19 @@ def process_image(image_bytes):
             return "Prediction error"
     
     return "Unable to process"
+
+# -------------------Create Default Admin User-------------------
+def init_db():
+    db.create_all()
+    # Create a persistent admin user so logins always work even if Render resets the database
+    if not User.query.filter_by(username='admin').first():
+        hashed_password = bcrypt.generate_password_hash('admin123').decode('utf-8')
+        admin_user = User(username='admin', email='admin@signify.com', password=hashed_password)
+        db.session.add(admin_user)
+        db.session.commit()
+        print("[INFO] Created default admin user (admin / admin123)")
+
+init_db()
 
 # -------------------Routes-------------------
 @app.route('/')
