@@ -22,7 +22,11 @@ import os
 # Suppress warnings
 warnings.filterwarnings('ignore')
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 app = Flask(__name__)
+# Tell Flask it is behind a proxy to ensure HTTPS headers are respected for CSRF protection
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
