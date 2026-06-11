@@ -29,7 +29,7 @@ app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+# socketio removed
 
 # -------------------Encrypt Password-------------------
 bcrypt = Bcrypt(app)
