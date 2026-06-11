@@ -36,6 +36,7 @@ bcrypt = Bcrypt(app)
 
 # -------------------Database Setup-------------------
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['WTF_CSRF_ENABLED'] = False
 app.config['SECRET_KEY'] = 'thisisasecretkey'
 app.config['REMEMBER_COOKIE_DURATION'] = 60 * 60 * 24 * 30  # 30 days
 app.config['PERMANENT_SESSION_LIFETIME'] = 60 * 60 * 24 * 30  # 30 days
